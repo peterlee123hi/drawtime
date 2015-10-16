@@ -1,0 +1,28 @@
+* {
+  box-sizing: border-box;
+}
+
+body {
+  color: #1E2835;
+  background-color: #F8F8F8;
+  font-size: 1.5em;
+  text-align: center;
+}
+
+canvas {
+  width: 800px;
+  height: 600px;
+  border: 1px #C7CACD solid;
+  display: block;
+  margin: 0.5em auto;
+}
+
+table {
+  width: 800px;
+}
+
+button {
+  width: 200px;
+  display: block;
+  margin: 0.5em auto;
+}

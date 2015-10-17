@@ -8,21 +8,27 @@ var rowify = function(username, color) {
 var setupCanvas = function(socket) {
   var canvas, context;
   var paint;
-  var positionsX = new Array();
-  var positionsY = new Array();
-  var positionsDrag = new Array();
-  var colors = new Array();
+  var positionsX, positionsY, positionsDrag, colors;
   
   // Get drawings stored on the server.
   socket.emit('getCurrentCanvas');
-  socket.on('handleCurrentCanvas', function(positions, drags, clrs) {
-      for(var i = 0; i < positions.length; i++) {
-        positionsX.push(positions[i].x);
-        positionsY.push(positions[i].y);
-        positionsDrag.push(drags[i]);
-        colors.push(clrs[i]);
+  
+  // Update your canvas.
+  socket.on('handleCurrentCanvas', function(userStrokes) {
+    positionsX = new Array();
+    positionsY = new Array();
+    positionsDrag = new Array();
+    colors = new Array();
+    for(var j = 0; j < userStrokes.length; j++) {
+      var strokes = userStrokes[j];
+      for(var i = 0; i < strokes.positions.length; i++) {
+        positionsX.push(strokes.positions[i].x);
+        positionsY.push(strokes.positions[i].y);
+        positionsDrag.push(strokes.drags[i]);
+        colors.push(strokes.colors[i]);
       }
-      draw();
+    }
+    draw();
   });
 
   // Draw strokes on canvas.
@@ -47,14 +53,6 @@ var setupCanvas = function(socket) {
       context.stroke();
     }
   };
-  
-  // Add a stroke for the draw function to draw.
-  var addClick = function(x, y, drag, c) {
-    positionsX.push(x);
-    positionsY.push(y);
-    positionsDrag.push(drag);
-    colors.push(c);
-  };
 
   canvas = $('canvas');
   context = canvas[0].getContext('2d');
@@ -68,9 +66,9 @@ var setupCanvas = function(socket) {
                     y: event.pageY - offset.top};
                     
     paint = true;
-    addClick(position.x, position.y, false, socketColor);
-    draw();
-    socket.emit('draw', position, false, socketColor);
+    
+    //Send server your strokes.
+    socket.emit('addClick', position, false, socketColor);
   });
   
   canvas.on('mousemove', function(event) {
@@ -78,38 +76,24 @@ var setupCanvas = function(socket) {
       var offset = canvas.offset();
       var position = {x: event.pageX - offset.left,
                       y: event.pageY - offset.top};
-      addClick(position.x, position.y, true, socketColor);
-      draw();
-      socket.emit('draw', position, true, socketColor);
+                      
+      //Send server your strokes.
+      socket.emit('addClick', position, true, socketColor);
     }
   });
   
   canvas.on('mouseup', function(event) {
-    paint = false; 
+    paint = false;
   });
   
   canvas.on('mouseleave', function(event) {
     paint = false;
   });
   
-  // Draw the strokes of other users.
-  socket.on('draw', function(position, drag, color) {
-    addClick(position.x, position.y, drag, color);
-    draw();
-  });
-  
   var clearButton = $('button');
   
   clearButton.on('click', function() {
     socket.emit('clearCanvas');
-  });
-  
-  socket.on('clearCanvas', function() {
-    positionsX = new Array();
-    positionsY = new Array();
-    positionsDrag = new Array();
-    colors = new Array();
-    draw();
   });
 };
 

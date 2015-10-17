@@ -11,16 +11,17 @@ var io = socket_io(server);
 var usernames = new Array();
 var userColors = new Array();
 
-var positions = new Array();
-var drags = new Array();
-var colors = new Array();
-
 io.on('connection', function(socket) {
   socket.on('handleUsername', function(name, color) {
     usernames.push(name);
     userColors.push(color);
     socket.username = name;
     socket.color = color;
+    socket.strokes = {
+      positions: new Array(),
+      drags: new Array(),
+      colors: new Array()
+    };
     io.emit('handleCurrentUsers', usernames, userColors);
   });
   
@@ -29,28 +30,48 @@ io.on('connection', function(socket) {
   });
   
   socket.on('getCurrentCanvas', function() {
-    socket.emit('handleCurrentCanvas', positions, drags, colors);
+    var userStrokes = new Array();
+    var scks = io.sockets.sockets;
+    for(var i = 0; i < scks.length; i++) {
+      if(scks[i].strokes !== undefined) {
+        userStrokes.push(scks[i].strokes);
+      }
+    }
+    socket.emit('handleCurrentCanvas', userStrokes);
   });
-
-  socket.on('draw', function(position, drag, color) {
-    positions.push(position);
-    drags.push(drag);
-    colors.push(color);
-    socket.broadcast.emit('draw', position, drag, color);
+  
+  socket.on('addClick', function(position, drag, socketColor) {
+    socket.strokes.positions.push(position);
+    socket.strokes.drags.push(drag);
+    socket.strokes.colors.push(socketColor);
+    var userStrokes = new Array();
+    var scks = io.sockets.sockets;
+    for(var i = 0; i < scks.length; i++) {
+      if(scks[i].strokes !== undefined) {
+        userStrokes.push(scks[i].strokes);
+      }
+    }
+    io.emit('handleCurrentCanvas', userStrokes);
   });
   
   socket.on('clearCanvas', function() {
-    positions = new Array();
-    drags = new Array();
-    colors = new Array();
-    io.emit('clearCanvas');
+    var userStrokes = new Array();
+    var scks = io.sockets.sockets;
+    for(var i = 0; i < scks.length; i++) {
+      scks[i].strokes = {
+        positions: new Array(),
+        drags: new Array(),
+        colors: new Array()
+      };
+      userStrokes.push(scks[i].strokes);
+    }
+    io.emit('handleCurrentCanvas', userStrokes);
   });
   
   socket.on('disconnect', function() {
     if(socket.username === undefined) {
       return null;
     }
-    
     var index = usernames.indexOf(socket.username);
     if(index > -1) {
       usernames.splice(index, 1);

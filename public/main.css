@@ -43,8 +43,8 @@ button:hover { background-color: #0082D4; }
 button:focus { outline: 0; }
 
 table {
-  background-color: #222;
-  border-radius: 10px;
+  background-color: #FFF;
+  border-radius: 8px;
 }
 
 th {

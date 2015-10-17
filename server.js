@@ -11,6 +11,12 @@ var io = socket_io(server);
 var usernames = new Array();
 var userColors = new Array();
 
+var history = {
+  positions: new Array(),
+  drags: new Array(),
+  colors: new Array()
+};
+
 io.on('connection', function(socket) {
   socket.on('handleUsername', function(name, color) {
     usernames.push(name);
@@ -37,6 +43,7 @@ io.on('connection', function(socket) {
         userStrokes.push(scks[i].strokes);
       }
     }
+    userStrokes.push(history);
     socket.emit('handleCurrentCanvas', userStrokes);
   });
   
@@ -51,6 +58,7 @@ io.on('connection', function(socket) {
         userStrokes.push(scks[i].strokes);
       }
     }
+    userStrokes.push(history);
     io.emit('handleCurrentCanvas', userStrokes);
   });
   
@@ -65,12 +73,22 @@ io.on('connection', function(socket) {
       };
       userStrokes.push(scks[i].strokes);
     }
+    history = {
+      positions: new Array(),
+      drags: new Array(),
+      colors: new Array()
+    };
     io.emit('handleCurrentCanvas', userStrokes);
   });
   
   socket.on('disconnect', function() {
     if(socket.username === undefined) {
       return null;
+    }
+    for(var i = 0; i < socket.strokes.positions.length; i++) {
+      history.positions.push(socket.strokes.positions[i]);
+      history.drags.push(socket.strokes.drags[i]);
+      history.colors.push(socket.strokes.colors[i]);
     }
     var index = usernames.indexOf(socket.username);
     if(index > -1) {

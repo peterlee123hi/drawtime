@@ -15,14 +15,50 @@ canvas {
   border: 1px #C7CACD solid;
   display: block;
   margin: 0.5em auto;
+  background-color: #FFF;
 }
 
 table {
   width: 800px;
+  margin: 0.5em auto;
 }
 
 button {
   width: 200px;
   display: block;
   margin: 0.5em auto;
+  padding: 0.5em;
+  background-color: #0064A3;
+  color: #FFF;
+  border-radius: 10px;
+  border: 0;
+  
+  -webkit-transition: background-color ease 0.5s;
+     -moz-transition: background-color ease 0.5s;
+       -o-transition: background-color ease 0.5s;
+          transition: background-color ease 0.5s;
+}
+
+button:hover { background-color: #0082D4; }
+button:focus { outline: 0; }
+
+table {
+  background-color: #222;
+  border-radius: 10px;
+}
+
+th {
+  font-size: 1.2em;
+  color: #04D905;
+}
+
+tr {
+  text-align: left;
+  color: #FFF;
+}
+
+th,
+td {
+  padding: 0.2em;
+  padding-left: 0.5em;
 }

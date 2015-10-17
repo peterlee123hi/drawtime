@@ -1,3 +1,7 @@
+var rowify = function(username) {
+  return '<tr id=\'' + username + '\'><td>' + username + '</td></tr>';
+};
+
 var setupCanvas = function(socket) {
   var canvas, context;
   var paint;
@@ -99,19 +103,27 @@ var setupCanvas = function(socket) {
 };
 
 var setupTable = function(socket) {
-  socket.on('getUsername', function() {
-    // Prompt for username.
-    // Set username.
-    // Send handleUsername to server.
+  socket.emit('getCurrentUsers');
+  
+  socket.on('handleCurrentUsers', function(users) {
+    $('table tr').slice(1).remove();
+    var table = $('table');
+    for(var i = 0; i < users.length; i++) {
+      table.append(rowify(users[i]));
+    }
   });
   
-  socket.on('addUser', function(name) {
-    // Add user to table.
-  });
+  // Prompt username.
+  var username = prompt('Enter your username:');
+  while(username.length == 0) {
+    username = prompt('Enter your username:');
+  }
   
-  socket.on('removeUser', function(name) {
-    // Remove user from table.  
-  });
+  // Set username.
+  socket.username = username;
+  
+  // Send handleUsername to server.
+  socket.emit('handleUsername', username);
 };
 
 $(document).ready(function() {
@@ -120,6 +132,8 @@ $(document).ready(function() {
   setupTable(socket);
   
   window.onbeforeunload = function(e) {
-    // Send removeUser to server.
+    if(socket.hasOwnProperty('username')) {
+      socket.emit('removeUser', socket.username);
+    }
   };
 });

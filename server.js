@@ -14,14 +14,19 @@ app.use(express.static('public'));
 var server = http.Server(app);
 var io = socket_io(server);
 
+var usernames = new Array();
+
 var positions = new Array();
 var drags = new Array();
 
 io.on('connection', function(socket) {
-  socket.emit('getUsername');
-  
   socket.on('handleUsername', function(name) {
-    io.emit('addUser', name);
+    usernames.push(name);
+    io.emit('handleCurrentUsers', usernames);
+  });
+  
+  socket.on('getCurrentUsers', function() {
+    socket.emit('handleCurrentUsers', usernames);
   });
   
   socket.on('getCurrentCanvas', function() {
@@ -41,7 +46,11 @@ io.on('connection', function(socket) {
   });
   
   socket.on('removeUser', function(name) {
-    io.emit('removeUser', name);
+    var index = usernames.indexOf(name);
+    if(index > -1) {
+      usernames.splice(index, 1);
+    }
+    io.emit('handleCurrentUsers', usernames);
   });
 });
 
